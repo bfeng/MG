@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void sys_init()
-{
+{ 
   printf("Initialize OpenCL context ... \n");
   
   //#-1 get platforms
