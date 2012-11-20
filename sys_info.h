@@ -1,7 +1,10 @@
+#ifndef OPENCL_HEADERS_INCLUDED
+#define OPENCL_HEADERS_INCLUDED
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
 #include <CL/opencl.h>
+#endif
 #endif
 
 #define NUM_OpenCL_MAX 2
@@ -26,6 +29,7 @@ cl_int ret_CreateContext_MULTIPLE;
 //use devices;
 cl_context context_MULTIPLE;
 
+int context_mode;
 
 
 
@@ -35,3 +39,4 @@ cl_context context_MULTIPLE;
 void sys_init();
 
 void sys_destory();
+void user_context();

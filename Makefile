@@ -1,7 +1,7 @@
 .phony: all clean test
 
 CC=gcc
-
+SOURCES=main.c sys_info.c SuperKernel_host.c
 objects=main.o
 
 all: MG
@@ -23,6 +23,6 @@ test:
 	###############################################
 	##### Compiler must be gcc-4.4 or g++-4.4 #####
 	###############################################
-	gcc -o MG main.c sys_info.c -I/usr/local/cuda/include -L/usr/lib64/ -lOpenCL
+	gcc -o MG $(SOURCES) -I/usr/local/cuda/include -L/usr/lib64/ -lOpenCL
 
 

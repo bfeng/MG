@@ -123,7 +123,27 @@ void sys_init()
   
 }
 
-
+void user_context()
+{
+  context_mode = 1;
+  if((int)*num_devices > 1)
+  {
+    printf("You have multiple GPU devices available on your machine.\n");
+    printf("(1) Single GPU mode .\n");
+    printf("(2) Multiple GPU mode .\n");
+    printf("Please enter the context to run >>>");
+    scanf("%d", &context_mode);
+    if(context_mode == 1)return;
+    else if(context_mode == 2)return;
+    else
+    {
+      printf(" @@@ Sorry! Wrong input! Context is set to single GPU mode! @@@\n");
+      context_mode = 2;
+    }
+  }
+  
+  return;  
+}
 
 
 void sys_destory()
