@@ -11,21 +11,20 @@
 
 //Data types
 //To keep consistency with CUDA code
-struct JobDescription{
+typedef struct JobDescription{
   int JobID;
   int JobType;
   int numThreads;
   int params; //OpenCL can only accept fixed array, and running kernel can never know new buffer
-};
+} JobDescription;
 typedef struct JobDescription *JobPointer; 
-
-struct QueueRecord {
-  struct JobDescription *Array; 
+typedef struct QueueRecord {
+  JobDescription *Array; 
   int Capacity;                 
   int Rear;
   int Front;
   int ReadLock;
-};
+} QueueRecord;
 typedef struct QueueRecord *Queue;
 
 cl_mem d_newJobs;
