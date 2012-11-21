@@ -15,7 +15,7 @@ struct JobDescription{
   int JobID;
   int JobType;
   int numThreads;
-  void *params;
+  int params; //OpenCL can only accept fixed array, and running kernel can never know new buffer
 };
 typedef struct JobDescription *JobPointer; 
 
@@ -41,3 +41,5 @@ cl_mem d_finishedJobs_array;
 
 void CreateQueues(int, cl_context, cl_command_queue);
 void DisposeQueues();
+void EnqueueJob(JobDescription *, cl_command_queue);
+JobDescription * FrontAndDequeueResult(cl_command_queue);

@@ -7,6 +7,10 @@
 #define STDLIB_INCLUDED
 #include <stdlib.h>
 #endif
+#ifndef PTHREAD_INCLUDED
+#define PTHREAD_INCLUDED
+#include <pthread.h>
+#endif
 
 static void check_err(cl_int);
 
@@ -69,12 +73,56 @@ void DisposeQueues() {
 }
 
 
+void EnqueueJob(JobDescription * h_jobDescription, cl_command_queue command_queue)
+{
+  
+  Queue h_Q = (Queue) malloc(sizeof(struct QueueRecord));
+  clEnqueueReadBuffer(command_queue, d_newJobs, CL_TRUE, 0, sizeof(h_Q), &h_Q, 0, NULL, NULL);
+  while(h_IsFull(h_Q))
+  {
+    pthread_yield();
+    clEnqueueReadBuffer(command_queue, d_newJobs, CL_TRUE, 0, 
+                        sizeof(h_Q), &h_Q, 0, NULL, NULL);
+  }
+  
+  h_Q->Rear = (h_Q->Rear+1)%(h_Q->Capacity);
+  clEnqueueWriteBuffer(command_queue, d_newJobs, CL_TRUE, sizeof(JobDescription) * h_Q->Rear, 
+                       sizeof(JobDescription), h_jobDescription, 0, NULL, NULL);
+  
+  clEnqueueWriteBuffer(command_queue, d_newJobs, CL_TRUE, 4+sizeof(JobDescription*), 
+                       sizeof(int), &h_Q->Rear, 0, NULL, NULL);
+                       
+  free(h_Q);
+}
+
+JobDescription * FrontAndDequeueResult(cl_command_queue command_queue)
+{
+  Queue h_Q = (Queue) malloc(sizeof(struct QueueRecord));
+  clEnqueueReadBuffer(command_queue, d_finishedJobs, CL_TRUE, 0, sizeof(h_Q), 
+                      &h_Q, 0, NULL, NULL);
+  while(h_IsEmpty(h_Q)){
+    pthread_yield();
+    clEnqueueReadBuffer(command_queue, d_finishedJobs, CL_TRUE, 0, sizeof(h_Q), 
+                        &h_Q, 0, NULL, NULL);
+  }
+  
+  JobDescription *result = (JobDescription *) malloc(sizeof(JobDescription));
+  clEnqueueReadBuffer(command_queue, d_finishedJobs, CL_TRUE, 
+                      sizeof(JobDescription) * h_Q->Front, 
+                      sizeof(JobDescription), result, 0, NULL, NULL);
+  
+  h_Q->Front = (h_Q->Front+1)%(h_Q->Capacity);
+  clEnqueueWriteBuffer(command_queue, d_finishedJobs, CL_TRUE, 8+sizeof(JobDescription*), 
+                       sizeof(int), &h_Q->Rear, 0, NULL, NULL);
+  free(h_Q);
+  return result;
+  
+}
 
 
 
 
-
-//Host Helper Functions
+//Helper Functions
 
 int h_IsEmpty(Queue Q) {
   return (Q->Rear+1)%Q->Capacity == Q->Front;
@@ -84,10 +132,6 @@ int h_IsFull(Queue Q) {
   return (Q->Rear+2)%Q->Capacity == Q->Front;
 }
 
-void *movePointer(void *p, int n){
-   char * ret = (char *) p;
-   return ((void *)(ret+n));
-}
 
 /* error handler
 
