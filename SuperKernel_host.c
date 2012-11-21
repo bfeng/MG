@@ -60,19 +60,19 @@ void SuperKernel_init(cl_context context)
   pthread_mutex_init(&memcpyLock, NULL);
   
   pthread_t IncomingJobManager = start_IncomingJobsManager();
-  pthread_t ResultsManager = start_ResultsManager();
+  //pthread_t ResultsManager = start_ResultsManager();
   
   pthread_join(IncomingJobManager, NULL);
-  pthread_join(ResultsManager, NULL);
+  //pthread_join(ResultsManager, NULL);
   
-  
+
   //-6 Finish and recycle
   printf("Both managers have finished\n");
   printf("Destorying Queues...\n");
     
   DisposeQueues();
   
-  pthread_mutex_destroy(&memcpyLock);
+  //pthread_mutex_destroy(&memcpyLock);
   
   
 }
@@ -88,13 +88,16 @@ pthread_t start_IncomingJobsManager()
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   pthread_t thread1;
+  
   int rc;
   rc = pthread_create( &thread1, &attr, main_IncomingJobsManager, NULL);
   if (rc) {
          printf("ERROR; return code from pthread_create is %d\n", rc);
          exit(-1);
          }
+         
   pthread_attr_destroy(&attr);
+
   return thread1;
 }
 void *main_IncomingJobsManager()
@@ -125,7 +128,7 @@ void *main_IncomingJobsManager()
     h_JobDescription->params = THE_SLEEP_TIME; 
     h_JobDescription->numThreads = HC_numThreads;
 
-    EnqueueJob(h_JobDescription, command_queue);
+    EnqueueJob(h_JobDescription, command_queue, memcpyLock);
 
     free(h_JobDescription);
   }
@@ -161,7 +164,7 @@ void *main_ResultsManager()
   JobDescription *currentJob;
   
   for(i=0;i<HC_jobs;i++){
-    currentJob = FrontAndDequeueResult(command_queue);
+    currentJob = FrontAndDequeueResult(command_queue, memcpyLock);
     
   }
   return 0;
