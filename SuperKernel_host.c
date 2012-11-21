@@ -5,7 +5,9 @@
 #include <stdio.h>
 #endif
 
-void check_err(cl_int);
+#include "QueueJobs.h"
+
+static void check_err(cl_int);
 
 void SuperKernel_init(cl_context context)
 {
@@ -26,16 +28,33 @@ void SuperKernel_init(cl_context context)
   THE_NUMBER_OF_JOBS = THE_warps * THE_blocks * THE_numJobsPerWarp;
   
   //#-2 Create CommandQueue
-  //#######################################
-  //# currently only single cpu is tested #
-  //#######################################
+  //##########################################
+  //# currently only single cpu is supported #
+  //##########################################
   cl_int ERR;
   command_queue = clCreateCommandQueue(context, devices[0], 0, &ERR);
   check_err(ERR);
   
+  //#-3 Create QueueJobs
+  CreateQueues(THE_NUMBER_OF_JOBS, context, command_queue);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  DisposeQueues();
+  
+  
+  
+  
 }
 
-void check_err(cl_int err)
+static void check_err(cl_int err)
 {
   if(err != CL_SUCCESS)
   {

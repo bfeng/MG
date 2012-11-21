@@ -11,7 +11,7 @@
 
 //Data types
 //To keep consistency with CUDA code
-typedef struct JobDescription{
+struct JobDescription{
   int JobID;
   int JobType;
   int numThreads;
@@ -19,7 +19,7 @@ typedef struct JobDescription{
 };
 typedef struct JobDescription *JobPointer; 
 
-typedef struct QueueRecord {
+struct QueueRecord {
   struct JobDescription *Array; 
   int Capacity;                 
   int Rear;
@@ -32,3 +32,12 @@ cl_mem d_newJobs;
 cl_mem d_finishedJobs;
 cl_mem d_newJobs_array;
 cl_mem d_finishedJobs_array;
+
+
+
+
+
+
+
+void CreateQueues(int, cl_context, cl_command_queue);
+void DisposeQueues();

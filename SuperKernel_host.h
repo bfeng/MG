@@ -28,4 +28,4 @@ extern cl_device_id *devices;
 
 
 
-void SuperKernel_init(cl_context context);
+void SuperKernel_init(cl_context);

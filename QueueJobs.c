@@ -8,12 +8,12 @@
 #include <stdlib.h>
 #endif
 
-void check_err(cl_int);
+static void check_err(cl_int);
 
 //Constructor and Destructor
 
 
-void CreateQueues(int MaxElements, cl_context context) {
+void CreateQueues(int MaxElements, cl_context context, cl_command_queue command_queue) {
   Queue Q = (Queue) malloc (sizeof(struct QueueRecord));
   Q->Capacity = MaxElements;
   Q->Front = 1;
@@ -22,31 +22,28 @@ void CreateQueues(int MaxElements, cl_context context) {
   
   cl_int ERR;
   d_newJobs = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(struct QueueRecord), 
-                             NULL, ERR);
+                             NULL, &ERR);
   check_err(ERR);
   d_newJobs_array = clCreateBuffer(context, CL_MEM_READ_ONLY, 
                                    sizeof(struct JobDescription) * MaxElements, 
-                                   NULL, ERR);
+                                   NULL, &ERR);
   check_err(ERR);
   d_finishedJobs = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(struct QueueRecord), 
-                                  NULL, ERR);
+                                  NULL, &ERR);
   check_err(ERR);
   d_finishedJobs_array = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
                                         sizeof(struct JobDescription) * MaxElements, 
-                                        NULL, ERR);
+                                        NULL, &ERR);
   check_err(ERR);
 
   
-  clEnqueueWriteBuffer
-
-  cudaSafeMemcpy(d_Q, Q, sizeof(struct QueueRecord), 
-                 cudaMemcpyHostToDevice, stream_dataIn, 
-                 "Copying initial queue to device");
+  clEnqueueWriteBuffer(command_queue, d_newJobs, CL_TRUE, 0, sizeof(Q), &Q, 0, NULL, NULL);
+  clEnqueueWriteBuffer(command_queue, d_finishedJobs, CL_TRUE, 0, sizeof(Q), &Q, 0, NULL, NULL);
   free(Q);
 
 }
 
-void check_err(cl_int err)
+static void check_err(cl_int err)
 {
   if(err != CL_SUCCESS)
   {
@@ -58,14 +55,17 @@ void check_err(cl_int err)
 
 
 
-void DisposeQueue(Queue d_Q) {
-  Queue h_Q = (Queue) malloc(sizeof(struct QueueRecord));
-  cudaSafeMemcpy(h_Q, d_Q, sizeof(struct QueueRecord), 
-                 cudaMemcpyDeviceToHost, stream_dataIn,
-                 "DisposeQueue, Copying Queue to get array pointer");
-  cudaFree(h_Q->Array);
-  free(h_Q);
-  cudaFree(d_Q);
+void DisposeQueues() {
+   cl_int ERR;
+   clReleaseMemObject(d_newJobs);
+   check_err(ERR);
+   clReleaseMemObject(d_finishedJobs);
+   check_err(ERR);
+   clReleaseMemObject(d_newJobs_array);
+   check_err(ERR);
+   clReleaseMemObject(d_finishedJobs_array);
+   check_err(ERR);
+   
 }
 
 
