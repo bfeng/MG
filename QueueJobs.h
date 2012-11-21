@@ -32,7 +32,7 @@ cl_mem d_finishedJobs;
 cl_mem d_newJobs_array;
 cl_mem d_finishedJobs_array;
 
-
+extern pthread_mutex_t memcpyLock;
 
 
 

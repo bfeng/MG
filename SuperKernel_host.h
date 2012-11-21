@@ -17,11 +17,9 @@ int THE_NUMBER_OF_JOBS;
 
 cl_command_queue command_queue;
 
-
 extern cl_device_id *devices;
 
-
-
+pthread_mutex_t memcpyLock;
 
 
 

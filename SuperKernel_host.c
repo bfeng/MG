@@ -56,6 +56,9 @@ void SuperKernel_init(cl_context context)
   
   
   //#-5 create pthreads to handle QueueJobs
+  
+  pthread_mutex_init(&memcpyLock, NULL);
+  
   pthread_t IncomingJobManager = start_IncomingJobsManager();
   pthread_t ResultsManager = start_ResultsManager();
   
@@ -69,7 +72,7 @@ void SuperKernel_init(cl_context context)
     
   DisposeQueues();
   
-  
+  pthread_mutex_destroy(&memcpyLock);
   
   
 }
@@ -159,7 +162,7 @@ void *main_ResultsManager()
   
   for(i=0;i<HC_jobs;i++){
     currentJob = FrontAndDequeueResult(command_queue);
-    printf("HERE IS RESULT: %d\n", currentJob->JobType);
+    
   }
   return 0;
 }

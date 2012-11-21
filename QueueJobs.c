@@ -11,10 +11,10 @@
 #define PTHREAD_INCLUDED
 #include <pthread.h>
 #endif
-#include <unistd.h>
+//#include <unistd.h>
 static void check_err(cl_int);
 static void check_err2(cl_int);
-
+void OpenCLSafeMemcpy(int mode, cl_mem device_mem, int offset, int size, void *ptr,  cl_command_queue a_command_queue, pthread_mutex_t memcpyLock);
 //Constructor and Destructor
 
 
@@ -104,7 +104,9 @@ void DisposeQueues() {
    check_err(ERR);
    
 }
-
+//////////////////////////////////////////////////
+//  Host access device buffer opencl
+//////////////////////////////////////////////////
 
 void EnqueueJob(JobDescription * h_jobDescription, cl_command_queue command_queue)
 {
@@ -112,56 +114,55 @@ void EnqueueJob(JobDescription * h_jobDescription, cl_command_queue command_queu
   Queue h_Q = (Queue) malloc(sizeof(struct QueueRecord));
   if(h_Q == NULL)
   printf("ERROR allocating memory in EnqueueJob!\n");
-  cl_int ERR1;
-  ERR1 = clEnqueueReadBuffer(command_queue, d_newJobs, CL_TRUE, 0, sizeof(h_Q), &h_Q, 0, NULL, NULL);
-  check_err2(ERR1);
+  //1
+  OpenCLSafeMemcpy(0, d_newJobs, 0, sizeof(h_Q), h_Q, command_queue, memcpyLock);
+  
   while(h_IsFull(h_Q))
   {
     pthread_yield();
-    ERR1 = clEnqueueReadBuffer(command_queue, d_newJobs, CL_TRUE, 0, 
-                        sizeof(h_Q), &h_Q, 0, NULL, NULL);
-    check_err2(ERR1);
+    //2
+    OpenCLSafeMemcpy(0, d_newJobs, 0, sizeof(h_Q), h_Q, command_queue, memcpyLock);
   }
   
   h_Q->Rear = (h_Q->Rear+1)%(h_Q->Capacity);
-  ERR1 = clEnqueueWriteBuffer(command_queue, d_newJobs, CL_TRUE, sizeof(JobDescription) * h_Q->Rear, sizeof(JobDescription), h_jobDescription, 0, NULL, NULL);
-  check_err2(ERR1);
-  
-  ERR1 = clEnqueueWriteBuffer(command_queue, d_newJobs, CL_TRUE, 4+sizeof(JobDescription*), 
-                       sizeof(int), &h_Q->Rear, 0, NULL, NULL);
-  check_err2(ERR1);
-    /*
+  //3
+  OpenCLSafeMemcpy(1, d_newJobs, sizeof(JobDescription) * h_Q->Rear, sizeof(JobDescription), h_jobDescription, command_queue, memcpyLock);
+
+  //4
+  OpenCLSafeMemcpy(1, d_newJobs, 4+sizeof(JobDescription*), sizeof(int), &h_Q->Rear, command_queue, memcpyLock);  
+
+    
     printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
     printf("@@@@@@@@       DEBUG    @@@@@@@@@\n");
     printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
-    sleep(1);
+    //sleep(1);
     printf("\n%d\n", h_Q->Rear);                     
     free(h_Q);
-    */
+    
 }
 
 JobDescription * FrontAndDequeueResult(cl_command_queue command_queue)
 {
   Queue h_Q = (Queue) malloc(sizeof(struct QueueRecord));
-  clEnqueueReadBuffer(command_queue, d_finishedJobs, CL_TRUE, 0, sizeof(h_Q), 
-                      &h_Q, 0, NULL, NULL);
-    printf("HERE IS RESULT: %d\n", h_Q->Rear);
+  //5
+  OpenCLSafeMemcpy(0, d_finishedJobs, 0, sizeof(h_Q), h_Q, command_queue, memcpyLock);
+
+    //printf("HERE IS RESULT: %d\n", h_Q->Rear);
   
   while(h_IsEmpty(h_Q)){
     pthread_yield();
-    clEnqueueReadBuffer(command_queue, d_finishedJobs, CL_TRUE, 0, sizeof(h_Q), 
-                        &h_Q, 0, NULL, NULL);
+    //6
+    OpenCLSafeMemcpy(0, d_finishedJobs, 0, sizeof(h_Q), h_Q, command_queue, memcpyLock);
   }
   
   
   JobDescription *result = (JobDescription *) malloc(sizeof(JobDescription));
-  clEnqueueReadBuffer(command_queue, d_finishedJobs, CL_TRUE, 
-                      sizeof(JobDescription) * h_Q->Front, 
-                      sizeof(JobDescription), result, 0, NULL, NULL);
+  //7
+  OpenCLSafeMemcpy(1, d_finishedJobs, sizeof(JobDescription) * h_Q->Front, sizeof(JobDescription), result, command_queue, memcpyLock);
   
   h_Q->Front = (h_Q->Front+1)%(h_Q->Capacity);
-  clEnqueueWriteBuffer(command_queue, d_finishedJobs, CL_TRUE, 8+sizeof(JobDescription*), 
-                       sizeof(int), &h_Q->Rear, 0, NULL, NULL);
+  //8
+  OpenCLSafeMemcpy(1, d_finishedJobs, 8+sizeof(JobDescription*), sizeof(int), &h_Q->Rear, command_queue, memcpyLock);
 
   free(h_Q);
   return result;
@@ -181,18 +182,20 @@ int h_IsFull(Queue Q) {
   return (Q->Rear+2)%Q->Capacity == Q->Front;
 }
 
-void OpenCLSafeMemcpy(int mode, cl_mem device_mem, void *ptr, int size, int offset, cl_command_queue a_command_queue, pthread_mutex_t memcpyLock)
+void OpenCLSafeMemcpy(int mode, cl_mem device_mem, int offset, int size, void *ptr, cl_command_queue a_command_queue, pthread_mutex_t memcpyLock)
 { //READ=mode(0)
   //WRITE=mode(1)
   pthread_mutex_lock(&memcpyLock);
-  
+  cl_int ERR1;
   if(mode == 0)
   {
-    clEnqueueReadBuffer(a_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
+    ERR1 = clEnqueueReadBuffer(a_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
+    check_err2(ERR1);
   }
   else if(mode == 1)
   {
-    clEnqueueWriteBuffer(a_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
+    ERR1 = clEnqueueWriteBuffer(a_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
+    check_err2(ERR1);
   }
   else printf("Check code calling safe memeory copy!");
   
