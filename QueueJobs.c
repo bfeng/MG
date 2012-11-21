@@ -194,7 +194,7 @@ JobDescription * FrontAndDequeueResult(cl_command_queue command_queue, pthread_m
   //5
   OpenCLSafeMemcpy(0, d_finishedJobs, 0, sizeof(h_Q), h_Q, command_queue, memcpyLock);
 
-    printf("HERE IS RESULT: %d\n", h_Q->Rear);
+    //printf("HERE IS RESULT: %d\n", h_Q->Rear);
   
   while(h_IsEmpty(h_Q)){
   
@@ -237,7 +237,7 @@ void OpenCLSafeMemcpy(int mode, cl_mem device_mem, size_t offset, size_t size, v
   //pthread_mutex_lock(&memcpyLock);
   cl_int ERR1;
   
-  printf("%lu, %lu", offset, size);
+  //printf("%lu, %lu", offset, size);
   
   if(mode == 0)
   {
