@@ -29,17 +29,17 @@ void CreateQueues(int MaxElements, cl_context context, cl_command_queue command_
   Q->ReadLock = 0;
   
   cl_int ERR;
-  d_newJobs = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(QueueRecord), 
+  d_newJobs = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(QueueRecord), 
                              NULL, &ERR);
   check_err(ERR);
-  d_newJobs_array = clCreateBuffer(context, CL_MEM_READ_ONLY, 
+  d_newJobs_array = clCreateBuffer(context, CL_MEM_READ_WRITE, 
                                    sizeof(JobDescription) * MaxElements, 
                                    NULL, &ERR);
   check_err(ERR);
-  d_finishedJobs = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(QueueRecord), 
+  d_finishedJobs = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(QueueRecord), 
                                   NULL, &ERR);
   check_err(ERR);
-  d_finishedJobs_array = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
+  d_finishedJobs_array = clCreateBuffer(context, CL_MEM_READ_WRITE, 
                                         sizeof(JobDescription) * MaxElements, 
                                         NULL, &ERR);
   check_err(ERR);
