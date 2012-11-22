@@ -1,7 +1,7 @@
 .phony: all clean test
 
 CC=gcc
-SOURCES=main.c sys_info.c SuperKernel_host.c QueueJobs.c
+SOURCES=main.c sys_info.c SuperKernel_host.c QueueJobs.c OpenCL_compiler.c
 objects=main.o
 
 all: MG

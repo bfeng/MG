@@ -5,7 +5,7 @@
 void openCL_compiler(char * filename, cl_context context, cl_device_id * devices)
 {
   //#-1 Read file
-  printf("Accessing kernel source: %s ...\n", filename);
+  printf("Compiling kernel source: %s ...\n", filename);
   FILE *fp;
   char path[256] = "";
   char *source_str;
@@ -27,8 +27,10 @@ void openCL_compiler(char * filename, cl_context context, cl_device_id * devices
   cl_int ERR;
   openCL_program = clCreateProgramWithSource(context, 1, 
             (const char **)&source_str, (const size_t *)&source_size, &ERR);
-  switch(ERR)
+  switch (ERR)
   {
+    case CL_SUCCESS:
+        break;
     case CL_INVALID_CONTEXT:
       printf("error during compiling: invalid context.\n");
       break;
@@ -46,11 +48,11 @@ void openCL_compiler(char * filename, cl_context context, cl_device_id * devices
   }
   
   //#-3 Compile and Link
-  ERR = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
+  ERR = clBuildProgram(openCL_program, 1, devices, NULL, NULL, NULL);
   
   //#-4 Return call-able kernel entry
-  openCL_kernel = clCreateKernel(program, "", &ERR);
+  openCL_kernel = clCreateKernel(openCL_program, "superKernel", &ERR);
   
   return;
             
-]
+}
