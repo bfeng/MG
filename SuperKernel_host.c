@@ -13,6 +13,7 @@
 #include <pthread.h>
 #endif
 #include "QueueJobs.h"
+#include "OpenCL_compiler.h"
 
 static void check_err(cl_int);
 pthread_t start_IncomingJobsManager();
@@ -50,8 +51,8 @@ void SuperKernel_init(cl_context context)
   //#-3 Create QueueJobs
   CreateQueues(THE_NUMBER_OF_JOBS, context, command_queue);
   
-  
-  
+  //#-4 Compile OpenCL Kernel program
+  openCL_compiler("SuperKernel_device.cl", context, &devices[0]);
   
   
   
