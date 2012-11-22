@@ -51,7 +51,7 @@ void SuperKernel_init(cl_context context)
   //#-3 Create QueueJobs
   CreateQueues(256000, context, command_queue);
   
-  //#-4 Compile OpenCL Kernel program
+  //#-4 Compile OpenCL Kernel program and run
   char filename[256] = "SuperKernel_device.cl";
   openCL_compiler(filename, context, &devices[0]);
   
