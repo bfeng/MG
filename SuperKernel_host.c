@@ -60,10 +60,10 @@ void SuperKernel_init(cl_context context)
   pthread_mutex_init(&memcpyLock, NULL);
   
   pthread_t IncomingJobManager = start_IncomingJobsManager();
-  //pthread_t ResultsManager = start_ResultsManager();
+  pthread_t ResultsManager = start_ResultsManager();
   
   pthread_join(IncomingJobManager, NULL);
-  //pthread_join(ResultsManager, NULL);
+  pthread_join(ResultsManager, NULL);
   
 
   //-6 Finish and recycle
@@ -164,6 +164,7 @@ void *main_ResultsManager()
   JobDescription *currentJob;
   
   for(i=0;i<HC_jobs;i++){
+  
     currentJob = FrontAndDequeueResult(command_queue, memcpyLock);
     
   }
