@@ -22,7 +22,6 @@
 
 #define MAX_SOURCE_SIZE (0x100000)
 
-
 //data struct
 cl_kernel openCL_kernel;
 cl_program openCL_program;

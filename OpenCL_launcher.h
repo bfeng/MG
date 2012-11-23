@@ -20,4 +20,21 @@
 #include <string.h>
 #endif
 
+typedef struct OpenCL_launcher_struct {
+//additional arguments
+
+cl_command_queue command_queue;//not from superkernel
+cl_kernel kernel;
+cl_uint work_dim;
+size_t global_work_offset;
+size_t global_work_size;
+size_t local_work_size;
+//events ignored for now
+
+} OpenCL_launcher_struct;
+
+#define WARP_SIZE 32
+
+cl_command_queue k_command_queue;
+
 //void openCL_launcher();

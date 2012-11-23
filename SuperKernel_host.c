@@ -51,13 +51,16 @@ void SuperKernel_init(cl_context context)
   //#-3 Create QueueJobs
   CreateQueues(256000, context, command_queue);
   
-  //#-4 Compile OpenCL Kernel program and run
+  //#-4 Compile OpenCL Kernel program
   char filename[256] = "SuperKernel_device.cl";
   openCL_compiler(filename, context, &devices[0]);
   
+  //#-5 Run kernel
+  OpenCL_launcher_struct * l_struct = (OpenCL_launcher_struct *) malloc (
+                                             sizeof(OpenCL_launcher_struct);
   
   
-  //#-5 create pthreads to handle QueueJobs
+  //#-6 create pthreads to handle QueueJobs
   
   pthread_mutex_init(&memcpyLock, NULL);
   
@@ -68,13 +71,13 @@ void SuperKernel_init(cl_context context)
   pthread_join(ResultsManager, NULL);
   
 
-  //-6 Finish and recycle
+  //#-7 Finish and recycle
   printf("Both managers have finished\n");
   printf("Destorying Queues...\n");
     
   DisposeQueues();
   
-  //pthread_mutex_destroy(&memcpyLock);
+  pthread_mutex_destroy(&memcpyLock);
   
   
 }
