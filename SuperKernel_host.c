@@ -14,6 +14,7 @@
 #endif
 #include "QueueJobs.h"
 #include "OpenCL_compiler.h"
+#include "OpenCL_launcher.h"
 
 static void check_err(cl_int);
 pthread_t start_IncomingJobsManager();
@@ -56,8 +57,7 @@ void SuperKernel_init(cl_context context)
   openCL_compiler(filename, context, &devices[0]);
   
   //#-5 Run kernel
-  OpenCL_launcher_struct * l_struct = (OpenCL_launcher_struct *) malloc (
-                                             sizeof(OpenCL_launcher_struct);
+  OpenCL_launcher_struct * l_struct = (OpenCL_launcher_struct *) malloc (sizeof(OpenCL_launcher_struct));
   
   
   //#-6 create pthreads to handle QueueJobs
@@ -179,7 +179,7 @@ void *main_ResultsManager()
 
 
 
-static void check_err(cl_int err)
+void check_err(cl_int err)
 {
   if(err != CL_SUCCESS)
   {
