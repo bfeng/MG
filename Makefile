@@ -1,8 +1,8 @@
 .phony: all clean test
 
 CC=gcc
-SOURCES=main.c sys_info.c SuperKernel_host.c QueueJobs.c OpenCL_compiler.c
-objects=main.o sys_info.o SuperKernel_host.o QueueJobs.o OpenCL_compiler.o
+SOURCES=main.c sys_info.c SuperKernel_host.c QueueJobs.c OpenCL_compiler.c OpenCL_launcher.c
+objects=main.o sys_info.o SuperKernel_host.o QueueJobs.o OpenCL_compiler.o OpenCL_launcher.o
 params=-I/usr/local/cuda/include -L/usr/lib64/ -lOpenCL
 
 all: MG
@@ -33,6 +33,8 @@ sys_info.o: sys_info.c sys_info.h
 SuperKernel_host.o: SuperKernel_host.c SuperKernel_host.h
 
 OpenCL_compiler.o: OpenCL_compiler.c OpenCL_compiler.h
+
+OpenCL_launcher.o: OpenCL_launcher.c OpenCL_launcher.h
 
 test:
 	###############################################

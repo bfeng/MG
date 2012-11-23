@@ -1,16 +1,30 @@
 
 #include "OpenCL_launcher.h"
+#include <pthread.h>
+
+void * kernel_launcher(void *);
+void check_err(cl_int);
+static void check_err_easy(cl_int);
 
 void openCL_launcher(cl_context k_context, cl_device_id device, 
-                     OpenCL_launcher_struct l_struct)
+                     OpenCL_launcher_struct l_struct, 
+                     cl_mem * in,
+                     cl_mem * in_array,
+                     cl_mem * out,
+                     cl_mem * out_array,
+                     int * numJobsPerWarp)
 {
   //Kernel is in Opencl_compiler.h 
   //context is in superkernel_host.c
   //(above) To generate command queue
   
   //#-1 set argument
-  
-  
+  cl_int ERR_arg;
+  ERR_arg = clSetKernelArg(l_struct.kernel, 0, sizeof(cl_mem), (void *)in);
+  ERR_arg = clSetKernelArg(l_struct.kernel, 1, sizeof(cl_mem), (void *)in_array);
+  ERR_arg = clSetKernelArg(l_struct.kernel, 2, sizeof(cl_mem), (void *)out);
+  ERR_arg = clSetKernelArg(l_struct.kernel, 3, sizeof(cl_mem), (void *)out_array);
+  ERR_arg = clSetKernelArg(l_struct.kernel, 4, sizeof(int), (void *)numJobsPerWarp);
   
   //#-2 create individual command_queue
   cl_int ERR;
@@ -51,7 +65,7 @@ void * kernel_launcher(void * l_struct)
                               &(((OpenCL_launcher_struct*)l_struct) -> local_work_size),
                               0, NULL, NULL);
   check_err(ERR);
-  ERR = clFinish(* ((cl_command_queue *)the_command_queue) );
+  ERR = clFinish( ((OpenCL_launcher_struct*)l_struct) -> command_queue );
   check_err(ERR);
   
 }

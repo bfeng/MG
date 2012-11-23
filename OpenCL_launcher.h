@@ -6,19 +6,21 @@
 #include <CL/opencl.h>
 #endif
 #endif
-
 #ifndef STDIO_INCLUDED
 #define STDIO_INCLUDED
 #include <stdio.h>
 #endif
+
 #ifndef STDLIB_INCLUDED
 #define STDLIB_INCLUDED
 #include <stdlib.h>
 #endif
+
 #ifndef PTHREAD_INCLUDED
 #define PTHREAD_INCLUDED
-#include <string.h>
+#include <pthread.h>
 #endif
+
 
 #define WARP_SIZE 32
 
@@ -39,4 +41,10 @@ size_t local_work_size;
 
 cl_command_queue k_command_queue;
 
-//void openCL_launcher();
+void openCL_launcher(cl_context, cl_device_id, 
+                     OpenCL_launcher_struct, 
+                     cl_mem *,
+                     cl_mem *,
+                     cl_mem *,
+                     cl_mem *,
+                     int *);

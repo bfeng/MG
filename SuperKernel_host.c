@@ -8,10 +8,9 @@
 #define STDLIB_INCLUDED
 #include <stdlib.h>
 #endif
-#ifndef PTHREAD_INCLUDED
-#define PTHREAD_INCLUDED
+
 #include <pthread.h>
-#endif
+
 #include "QueueJobs.h"
 #include "OpenCL_compiler.h"
 #include "OpenCL_launcher.h"
