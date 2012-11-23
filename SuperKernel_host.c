@@ -58,6 +58,24 @@ void SuperKernel_init(cl_context context)
   //#-5 Run kernel
   OpenCL_launcher_struct * l_struct = (OpenCL_launcher_struct *) malloc (sizeof(OpenCL_launcher_struct));
   
+  //##########################################
+  //# input for EnqueueNDRangeKernel         #
+  //##########################################
+  l_struct->command_queue = NULL;
+  l_struct->kernel = openCL_kernel;
+  l_struct->work_dim = (cl_int)1;
+  l_struct->global_work_offset = (size_t)NULL;
+  l_struct->global_work_size = (size_t)32*THE_warps*THE_blocks;
+  l_struct->local_work_size = (size_t)32*THE_warps;
+  
+  openCL_launcher(context, devices[0], 
+                     l_struct, 
+                     &d_newJobs,
+                     &d_newJobs_array,
+                     &d_finishedJobs,
+                     &d_finishedJobs_array,
+                     &THE_numJobsPerWarp);
+  
   
   //#-6 create pthreads to handle QueueJobs
   
