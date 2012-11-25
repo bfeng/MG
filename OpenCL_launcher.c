@@ -81,7 +81,7 @@ void check_err(cl_int err)
   if(err != CL_SUCCESS)
   {
     printf("#Error relating to buffer read or write!!\n");
-    printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
+    //printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
     switch(err)
     {
       case CL_INVALID_MEM_OBJECT:
@@ -123,6 +123,32 @@ void check_err_easy(cl_int err)
   if(err != CL_SUCCESS)
   {
     printf("#Error in OpenCL_launcher!!\n");
-    printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
+    //printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
+    switch(err)
+    {
+      case CL_INVALID_KERNEL:
+        printf("invalid kernel object\n");
+        break;
+      case CL_OUT_OF_RESOURCES:
+        printf("failure to allocate OpenCL resources on the device\n");
+        break;
+      case CL_OUT_OF_HOST_MEMORY:
+        printf("Out Of Host Memory\n");
+        break;
+      case CL_INVALID_ARG_INDEX:
+        printf("invalid arg index\n");
+        break;
+      case CL_INVALID_ARG_VALUE:
+        printf("invalid arg value\n");
+        break;
+      case CL_INVALID_MEM_OBJECT:
+        printf("invalid arg memory object\n");
+        break;
+      case CL_INVALID_ARG_SIZE:
+        printf("invalid arg size\n");
+        break;
+      default:
+        printf("Impossible Error.\n");
+    }
   }
 }
