@@ -149,5 +149,7 @@ void program_build_info(cl_program program, cl_device_id device)
     }
   }
   printf("%s\n", ret_char);
-  
+  printf("############################################################\n");
+  printf("#               OpenCL Compiler Scripts - END              #\n");
+  printf("############################################################\n");
 }

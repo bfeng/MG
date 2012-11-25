@@ -21,7 +21,7 @@ __kernel void superKernel(__global struct QueueRecord * incomming,
                           __global struct JobDescription * incomming_array, 
                           __global struct QueueRecord * result, 
                           __global struct JobDescription * result_array, 
-                          const numJobsPerWarp)
+                          const int numJobsPerWarp)
 {
   int warp_size = 32;
   
@@ -34,11 +34,11 @@ __kernel void superKernel(__global struct QueueRecord * incomming,
   int i;
   for (i = 0; i < numJobsPerWarp; atom_inc(i))
   {
-    if(threadID = 0) printf("I am manager in this warp");
+    if(threadID == 0) printf("I am manager in this warp");
     
     if(threadID < (currentJobs[warpID].numThreads)) printf("execute job");
     
-    if(threadID = 0) printf("I also enqueue result\n");
+    if(threadID == 0) printf("I also enqueue result\n");
   }
   
 }
@@ -47,7 +47,7 @@ __kernel void superKernel(__global struct QueueRecord * incomming,
 
 
 
-
+/*
 
 //////////////////////////////////
 ////  SuperKernel helpers
@@ -70,3 +70,4 @@ void releaseLock(volatile Queue Q)
 {
   atom_xchg(&(Q->ReadLock),0);
 }
+*/
