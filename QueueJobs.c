@@ -43,6 +43,11 @@ void CreateQueues(int MaxElements, cl_context context, cl_command_queue command_
                                         sizeof(JobDescription) * MaxElements, 
                                         NULL, &ERR);
   check_err(ERR);
+  //debug memory
+  d_debug = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(char)*1024, NULL, &ERR);
+  check_err(ERR);
+  char debug_init[1024] = {0};
+  clEnqueueWriteBuffer(command_queue, d_debug, CL_TRUE, 0, sizeof(char)*1024, debug_init, 0, NULL, NULL);
 
   
   clEnqueueWriteBuffer(command_queue, d_newJobs, CL_TRUE, 0, sizeof(QueueRecord), Q, 0, NULL, NULL);

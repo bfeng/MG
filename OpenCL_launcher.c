@@ -12,6 +12,7 @@ void openCL_launcher(cl_context k_context, cl_device_id device,
                      cl_mem * in_array,
                      cl_mem * out,
                      cl_mem * out_array,
+                     cl_mem * debug,
                      int * numJobsPerWarp)
 {
   //Kernel is in Opencl_compiler.h 
@@ -31,6 +32,8 @@ void openCL_launcher(cl_context k_context, cl_device_id device,
   check_err_easy(ERR_arg);
   ERR_arg = clSetKernelArg(l_struct->kernel, 4, sizeof(int), (void *)numJobsPerWarp);
   check_err_easy(ERR_arg);
+  
+  ERR_arg = clSetKernelArg(l_struct->kernel, 5, sizeof(cl_mem), (void *)debug);
   
   //#-2 create individual command_queue
   cl_int ERR;

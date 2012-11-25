@@ -74,6 +74,7 @@ void SuperKernel_init(cl_context context)
                      &d_newJobs_array,
                      &d_finishedJobs,
                      &d_finishedJobs_array,
+                     &d_debug,
                      &THE_numJobsPerWarp);
   
   

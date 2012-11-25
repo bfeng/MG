@@ -39,4 +39,4 @@ size_t local_work_size;
 
 cl_command_queue k_command_queue;
 
-void openCL_launcher(cl_context, cl_device_id, OpenCL_launcher_struct *, cl_mem *,cl_mem  *,cl_mem *,cl_mem *,int *);
+void openCL_launcher(cl_context, cl_device_id, OpenCL_launcher_struct *, cl_mem *,cl_mem  *,cl_mem *,cl_mem *,cl_mem*, int *);

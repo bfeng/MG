@@ -21,7 +21,8 @@ __kernel void superKernel(__global struct QueueRecord * incomming,
                           __global struct JobDescription * incomming_array, 
                           __global struct QueueRecord * result, 
                           __global struct JobDescription * result_array, 
-                          const int numJobsPerWarp)
+                          const int numJobsPerWarp
+                          __global char * debug)
 {
   int warp_size = 32;
   
@@ -30,15 +31,15 @@ __kernel void superKernel(__global struct QueueRecord * incomming,
   int threadID = get_local_id(0) % warp_size;
   int warpID = get_local_id(0) / warp_size;
   
-  printf("I got threadID = %d, warpID = %d\n", threadID, warpID);
+
   int i;
-  for (i = 0; i < numJobsPerWarp; atom_inc(i))
+  for (i = 0; i < numJobsPerWarp; i++)
   {
-    if(threadID == 0) printf("I am manager in this warp");
+    if(threadID == 0);
     
-    if(threadID < (currentJobs[warpID].numThreads)) printf("execute job");
+    if(threadID < (currentJobs[warpID].numThreads));
     
-    if(threadID == 0) printf("I also enqueue result\n");
+    if(threadID == 0);
   }
   
 }
@@ -47,27 +48,23 @@ __kernel void superKernel(__global struct QueueRecord * incomming,
 
 
 
-/*
+
 
 //////////////////////////////////
 ////  SuperKernel helpers
 //////////////////////////////////
-int d_IsEmpty(volatile Queue Q) {
-  volatile int *rear = &(Q->Rear);
-  return (*rear+1)%Q->Capacity == Q->Front;
-}
+//int d_IsEmpty(volatile Queue Q) {
+//  volatile int *rear = &(Q->Rear);
+//  return (*rear+1)%Q->Capacity == Q->Front;}
 
-int d_IsFull(volatile Queue Q) {
-  volatile int *front = &(Q->Front);
-  return (Q->Rear+2)%Q->Capacity == *front;
-}
-void getLock(volatile Queue Q)
-{
-  while(atom_cmpxchg(&(Q->ReadLock), 0, 1) != 0);
-}
+//int d_IsFull(volatile Queue Q) {
+//  volatile int *front = &(Q->Front);
+//  return (Q->Rear+2)%Q->Capacity == *front;}
+//void getLock(volatile Queue Q)
+//{
+//  while(atom_cmpxchg(&(Q->ReadLock), 0, 1) != 0);}
 
-void releaseLock(volatile Queue Q)
-{
-  atom_xchg(&(Q->ReadLock),0);
-}
-*/
+//void releaseLock(volatile Queue Q)
+//{
+//  atom_xchg(&(Q->ReadLock),0);}
+
