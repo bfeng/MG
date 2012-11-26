@@ -74,6 +74,7 @@ void * kernel_launcher(void * l_struct)
                               &(((OpenCL_launcher_struct*)l_struct) -> local_work_size),
                               0, NULL, NULL);
   check_err(ERR);
+  //this thread blocks here until kernel finish
   ERR = clFinish( ((OpenCL_launcher_struct*)l_struct) -> command_queue );
   check_err(ERR);
   
