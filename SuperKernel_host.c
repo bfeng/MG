@@ -14,6 +14,7 @@
 #include "QueueJobs.h"
 #include "OpenCL_compiler.h"
 #include "OpenCL_launcher.h"
+#include "OpenCL_debugger.h"
 
 static void check_err(cl_int);
 pthread_t start_IncomingJobsManager();
@@ -52,6 +53,7 @@ void SuperKernel_init(cl_context context)
   CreateQueues(256000, context, command_queue);
   
   //#-4 Compile OpenCL Kernel program
+  
   char filename[256] = "SuperKernel_device.cl";
   openCL_compiler(filename, context, &devices[0]);
   
@@ -78,7 +80,10 @@ void SuperKernel_init(cl_context context)
                      &THE_numJobsPerWarp);
   
   
-  //#-6 create pthreads to handle QueueJobs
+  //#-6 Create debug pthread
+  openCL_debugger(context, devices[0], d_debug);
+  
+  //#-7 create pthreads to handle QueueJobs
   
   pthread_mutex_init(&memcpyLock, NULL);
   
@@ -89,7 +94,7 @@ void SuperKernel_init(cl_context context)
   pthread_join(ResultsManager, NULL);
   
 
-  //#-7 Finish and recycle
+  //#-8 Finish and recycle
   printf("Both managers have finished\n");
   printf("Destorying Queues...\n");
     

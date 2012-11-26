@@ -74,17 +74,19 @@ void * kernel_launcher(void * l_struct)
                               &(((OpenCL_launcher_struct*)l_struct) -> local_work_size),
                               0, NULL, NULL);
   check_err(ERR);
+  //printf("workdim %d\n",((OpenCL_launcher_struct*)l_struct) -> work_dim);
   //this thread blocks here until kernel finish
   ERR = clFinish( ((OpenCL_launcher_struct*)l_struct) -> command_queue );
   check_err(ERR);
   
+  return 0;
 }
 
 void check_err(cl_int err)
 {
   if(err != CL_SUCCESS)
   {
-    printf("#Error relating to buffer read or write!!\n");
+    printf("#Error relating to buffer read or write!!(launcher)\n");
     //printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
     switch(err)
     {

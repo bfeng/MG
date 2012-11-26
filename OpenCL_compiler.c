@@ -51,7 +51,7 @@ void openCL_compiler(char * filename, cl_context context, cl_device_id * devices
   
   
   //#-3 Compile and Link
-  ERR = clBuildProgram(openCL_program, 1, devices, NULL, NULL, NULL);
+  ERR = clBuildProgram(openCL_program, 1, devices, "-I /usr/inluce/linux/stddef.h", NULL, NULL);
   check_err_c(ERR);
   program_build_info(openCL_program, *devices);
   //#-4 Return call-able kernel entry

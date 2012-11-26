@@ -14,6 +14,7 @@
 //#include <unistd.h>
 static void check_err(cl_int);
 static void check_err2(cl_int);
+static void check_err3(cl_int);
 int h_IsEmpty(Queue);
 int h_IsFull(Queue);
 void OpenCLSafeMemcpy(int mode, cl_mem device_mem, size_t offset, size_t size, void *ptr,  cl_command_queue a_command_queue, pthread_mutex_t memcpyLock);
@@ -43,9 +44,12 @@ void CreateQueues(int MaxElements, cl_context context, cl_command_queue command_
                                         sizeof(JobDescription) * MaxElements, 
                                         NULL, &ERR);
   check_err(ERR);
+  
   //debug memory
   d_debug = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(char)*1024, NULL, &ERR);
   check_err(ERR);
+  
+  
   char debug_init[1024] = {0};
   clEnqueueWriteBuffer(command_queue, d_debug, CL_TRUE, 0, sizeof(char)*1024, debug_init, 0, NULL, NULL);
 
@@ -54,6 +58,7 @@ void CreateQueues(int MaxElements, cl_context context, cl_command_queue command_
   clEnqueueWriteBuffer(command_queue, d_finishedJobs, CL_TRUE, 0, sizeof(QueueRecord), Q, 0, NULL, NULL);
   ERR = clFinish(command_queue);
   check_err(ERR);
+  
   
   //debug
   /*
@@ -100,7 +105,7 @@ static void check_err2(cl_int err)
 {
   if(err != CL_SUCCESS)
   {
-    printf("#Error relating to buffer read or write!!\n");
+    printf("#Error relating to buffer read or write!!(QueueJobs)\n");
     printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
     switch(err)
     {
@@ -139,7 +144,48 @@ static void check_err2(cl_int err)
   }//else printf("SUCCESS");
 }
 
-
+static void check_err3(cl_int err)
+{
+  if(err != CL_SUCCESS)
+  {
+    printf("#Error relating to buffer read or write!!(SafeMemCopy)\n");
+    printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
+    switch(err)
+    {
+      case CL_INVALID_MEM_OBJECT:
+        printf("Memroy Object Invalid\n");
+        break;
+      case CL_OUT_OF_RESOURCES:
+        printf("failure to allocate OpenCL resources on the device\n");
+        break;
+      case CL_OUT_OF_HOST_MEMORY:
+        printf("Out Of Host Memory\n");
+        break;
+      case CL_INVALID_COMMAND_QUEUE:
+        printf("invalid command queue\n");
+        break;
+      case CL_INVALID_CONTEXT:
+        printf("invalid context\n");
+        break;
+      case CL_INVALID_VALUE:
+        printf("invalid value\n");
+        break;
+      case CL_INVALID_EVENT_WAIT_LIST:
+        printf("invalid event list\n");
+        break;
+      case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+        printf("mem allocation failure\n");
+        break;
+      case CL_INVALID_OPERATION:
+        printf("invalid operation\n");
+        break;
+      default:
+        printf("Impossible Error.\n");
+    } 
+    
+    
+  }//else printf("SUCCESS\n");
+}
 void DisposeQueues() {
    cl_int ERR;
    ERR = clReleaseMemObject(d_newJobs);
@@ -170,6 +216,7 @@ void EnqueueJob(JobDescription * h_JobDescription, cl_command_queue command_queu
     pthread_yield();
     //2
     OpenCLSafeMemcpy(0, d_newJobs, 0, sizeof(QueueRecord), h_Q, command_queue, memcpyLock);
+    
   }
   
   h_Q->Rear = (h_Q->Rear+1)%(h_Q->Capacity);
@@ -178,11 +225,11 @@ void EnqueueJob(JobDescription * h_JobDescription, cl_command_queue command_queu
   //printf("%lu, %lu", sizeof(JobDescription) * h_Q->Rear, sizeof(JobDescription));
 
   
-  OpenCLSafeMemcpy(1, d_newJobs_array, sizeof(JobDescription) * h_Q->Rear, sizeof(JobDescription), h_JobDescription, command_queue, memcpyLock);
+  OpenCLSafeMemcpy(1, d_newJobs_array, sizeof(JobDescription) * (h_Q->Rear), sizeof(JobDescription), h_JobDescription, command_queue, memcpyLock);
 
 
   //4
-  OpenCLSafeMemcpy(1, d_newJobs, 4+sizeof(JobDescription*), sizeof(int), &h_Q->Rear, command_queue, memcpyLock);  
+  OpenCLSafeMemcpy(1, d_newJobs, 4+sizeof(JobDescription*), sizeof(int), &(h_Q->Rear), command_queue, memcpyLock);  
     
 
     //sleep(1);
@@ -234,7 +281,7 @@ int h_IsFull(Queue Q) {
   return (Q->Rear+2)%Q->Capacity == Q->Front;
 }
 
-void OpenCLSafeMemcpy(int mode, cl_mem device_mem, size_t offset, size_t size, void *ptr, cl_command_queue a_command_queue, pthread_mutex_t memcpyLock)
+void OpenCLSafeMemcpy(int mode, cl_mem device_mem, size_t offset, size_t size, void *ptr, cl_command_queue cp_command_queue, pthread_mutex_t memcpyLock)
 { //READ=mode(0)
   //WRITE=mode(1)
   pthread_mutex_lock(&memcpyLock);
@@ -244,23 +291,23 @@ void OpenCLSafeMemcpy(int mode, cl_mem device_mem, size_t offset, size_t size, v
   
   if(mode == 0)
   {
-    ERR1 = clEnqueueReadBuffer(a_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
+    ERR1 = clEnqueueReadBuffer(cp_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
     
     
-    check_err2(ERR1);
+    check_err3(ERR1);
   }
   else if(mode == 1)
   {
-    ERR1 = clEnqueueWriteBuffer(a_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
+    ERR1 = clEnqueueWriteBuffer(cp_command_queue, device_mem, CL_TRUE, offset, size, ptr, 0, NULL, NULL);
 
     
-    check_err2(ERR1);
+    check_err3(ERR1);
     
   }
   else printf("Check code calling safe memeory copy!");
 
-  ERR1 = clFinish(a_command_queue);
-  check_err2(ERR1);
+  ERR1 = clFinish(cp_command_queue);
+  check_err3(ERR1);
   
   pthread_mutex_unlock(&memcpyLock);
 
