@@ -7,8 +7,8 @@
 #endif
 #endif
 
-#define NUM_OpenCL_MAX 2
-#define NUM_GPU_MAX 4
+#define NUM_OpenCL_MAX 1
+#define NUM_GPU_MAX 1
 
 cl_int ret_clGetPlatformIDs;
 cl_platform_id * platforms;
