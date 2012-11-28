@@ -8,11 +8,12 @@ void sys_init()
   
   //#-1 get platforms
   num_entries_plat = NUM_OpenCL_MAX;
+  printf("%d ", NUM_OpenCL_MAX);
   platforms = (cl_platform_id*) malloc(sizeof(cl_platform_id) * num_entries_plat);
   num_platforms = (cl_uint*) malloc(sizeof(cl_uint));
   
   ret_clGetPlatformIDs = clGetPlatformIDs(num_entries_plat, platforms, num_platforms);
-  
+  printf("DEBUG1\n"); 
   switch (ret_clGetPlatformIDs)
   {
     case CL_SUCCESS:

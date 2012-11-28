@@ -1,20 +1,23 @@
-.phony: all clean test
+.phony: all run clean test
 
 CC=gcc
 SOURCES=main.c sys_info.c SuperKernel_host.c QueueJobs.c OpenCL_compiler.c OpenCL_launcher.c OpenCL_debugger.c
 objects=main.o sys_info.o SuperKernel_host.o QueueJobs.o OpenCL_compiler.o OpenCL_launcher.o OpenCL_debugger.o
-params=-I/usr/local/cuda/include -L/usr/lib64/ -lOpenCL
+params=-I/usr/local/cuda/include -L/usr/lib64 -lOpenCL -lrt
 
 all: MG
 	echo all: make complete
+run: all
+	echo run: MG
+	./MG
 
 MG: $(objects)
 	$(CC) -o $@ $+ $(params)
 
 clean:
-	rm -f $(objects)
-	rm -f MG
-	rm -f *.h.gch
+	rm $(objects)
+	rm MG
+	rm *.h.gch
 
 %.o:%.c
 	$(CC) -c $+ $(params)
@@ -37,6 +40,9 @@ OpenCL_compiler.o: OpenCL_compiler.c OpenCL_compiler.h
 
 OpenCL_launcher.o: OpenCL_launcher.c OpenCL_launcher.h
 
+test_add:
+	gcc -o test_vector_add.out test_vector_add.c $(params)
+	./test_vector_add.out
 test:
 	###############################################
 	##### Compiler must be gcc-4.4 or g++-4.4 #####

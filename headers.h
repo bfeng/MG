@@ -2,5 +2,3 @@
 
 #include "SuperKernel_host.h"
 
-
-
