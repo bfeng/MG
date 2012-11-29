@@ -46,10 +46,10 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
 
   THE_warps = warps;
   THE_blocks = blocks;
-  THE_numJobsPerWarp = num_job_per_warp;
+  THE_numJobsPerWarp = num_job_per_warp; //number of jobs per kernel input
   THE_SLEEP_TIME = sleep_time;
 
-  THE_NUMBER_OF_JOBS = THE_warps * THE_blocks * THE_numJobsPerWarp;
+  //THE_NUMBER_OF_JOBS = THE_warps * THE_blocks * THE_numJobsPerWarp;
 
   //#-2 Create CommandQueue
   //##########################################
@@ -66,6 +66,11 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
                              NULL, &ERR);
   check_err(ERR);
   clEnqueueWriteBuffer(command_queue, d_sleeptime, CL_TRUE, 0, sizeof(int), &THE_SLEEP_TIME, 0, NULL, NULL);
+  cl_mem d_numjobs = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), 
+                             NULL, &ERR);
+  check_err(ERR);
+  clEnqueueWriteBuffer(command_queue, d_numjobs, CL_TRUE, 0, sizeof(int), &THE_numJobsPerWarp, 0, NULL, NULL);
+  
   
                              
 
@@ -105,11 +110,15 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
   check_err_easy(ERR);
   ERR = clSetKernelArg(openCL_kernel, 0, sizeof(cl_mem), (void *)&d_sleeptime);
   ERR = clSetKernelArg(openCL_kernel, 1, sizeof(cl_mem), (void *)&d_debug);
+  ERR = clSetKernelArg(openCL_kernel, 2, sizeof(cl_mem), (void *)&d_numjobs);
   
   size_t global_work_size_d = THE_warps;
   //THE_blocks * 48 * THE_warps;
   size_t local_work_size = THE_numJobsPerWarp;
   //48 * THE_warps;
+  
+  size_t offset = 0;
+  size_t offset1 = 47;
   int ii = 0;
   
   //for (ii;ii<THE_warps;ii++)
@@ -118,11 +127,12 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
                               command_queue,
                               openCL_kernel,
                               1,
-                              NULL,
+                              &offset,
                               &global_work_size_d,
                               &local_work_size,
                               0, NULL, NULL);
     check_err(ERR);
+
   //}
   
   /*
