@@ -16,10 +16,9 @@
 #include <stdlib.h>
 #endif
 
-#ifndef PTHREAD_INCLUDED
-#define PTHREAD_INCLUDED
+
 #include <pthread.h>
-#endif
+
 
 typedef struct OpenCL_debugger_struct{
 
@@ -29,6 +28,7 @@ cl_device_id device;
 cl_mem mem;
 
 
-} OpenCL_debugger_struct;
 
+} OpenCL_debugger_struct;
+pthread_t P_Debugger;
 void openCL_debugger(cl_context debugger_context, cl_device_id debug_device, cl_mem debug_mem);

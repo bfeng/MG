@@ -29,6 +29,7 @@ void openCL_debugger(cl_context debugger_context, cl_device_id debug_device, cl_
          printf("ERROR; return code from pthread 4 _create is %d\n", rc);
          exit(-1);
          }
+  P_Debugger = thread4;
          
   pthread_attr_destroy(&attr);
   
@@ -66,6 +67,8 @@ void *kernel_debugger(void * pt)
     printf("########################\n");
     printf("#activate debug memory!#\n");
     printf("########################\n");
+    
+    printf("It is %c.\n", *(ret_ptr+1));
   }
   
   return 0;

@@ -61,13 +61,21 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
 
   //#-3 Create QueueJobs
   CreateQueues(256000, context, command_queue);
+  
+  cl_mem d_sleeptime = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), 
+                             NULL, &ERR);
+  check_err(ERR);
+  
+                             
 
   //#-4 Compile OpenCL Kernel program
-
-  char filename[256] = "SuperKernel_device.cl";
+  
+  //char filename[256] = "SuperKernel_device.cl";
+  char filename[256] = "OpenCL_sleep.cl";
   openCL_compiler(filename, context, &devices[0]);
 
   //#-5 Run kernel
+  /*
   OpenCL_launcher_struct * l_struct = (OpenCL_launcher_struct *) malloc (sizeof(OpenCL_launcher_struct));
 
   //##########################################
@@ -89,7 +97,29 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
                      &d_debug,
                      &THE_numJobsPerWarp);
 
-
+  */
+  
+  //#-5b test debugger run with sleep
+  //sleep_command_queue = clCreateCommandQueue(context, devices[0], 0, &ERR);
+  check_err_easy(ERR);
+  ERR = clSetKernelArg(openCL_kernel, 0, sizeof(cl_mem), (void *)&d_sleeptime);
+  ERR = clSetKernelArg(openCL_kernel, 1, sizeof(cl_mem), (void *)&d_debug);
+  
+  size_t global_work_size_d = 10;
+  size_t local_work_size = 5;
+  
+  ERR = clEnqueueNDRangeKernel( //list of arguments
+                              command_queue,
+                              openCL_kernel,
+                              1,
+                              NULL,
+                              &global_work_size_d,
+                              &local_work_size,
+                              0, NULL, NULL);
+  check_err(ERR);
+  
+  ERR = clFinish(command_queue);
+  
   //#-6 Create debug pthread
   openCL_debugger(context, devices[0], d_debug);
 
@@ -97,15 +127,15 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
 
   pthread_mutex_init(&memcpyLock, NULL);
 
-  pthread_t IncomingJobManager = start_IncomingJobsManager();
-  pthread_t ResultsManager = start_ResultsManager();
+  //pthread_t IncomingJobManager = start_IncomingJobsManager();
+  //pthread_t ResultsManager = start_ResultsManager();
 
-  pthread_join(IncomingJobManager, NULL);
-  pthread_join(ResultsManager, NULL);
-
+  //pthread_join(IncomingJobManager, NULL);
+  //pthread_join(ResultsManager, NULL);
+  pthread_join(P_Debugger, NULL);
 
   //#-8 Finish and recycle
-  printf("Both managers have finished\n");
+  //printf("Both managers have finished\n");
   printf("Destorying Queues...\n");
 
   DisposeQueues();
@@ -218,5 +248,38 @@ void check_err(cl_int err)
   {
     printf("#Error in SuperKernel_host!!\n");
     printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
+    
+    switch(err)
+    {
+      case CL_INVALID_MEM_OBJECT:
+        printf("Memroy Object Invalid\n");
+        break;
+      case CL_OUT_OF_RESOURCES:
+        printf("failure to allocate OpenCL resources on the device\n");
+        break;
+      case CL_INVALID_GLOBAL_OFFSET:
+        printf("global offset\n");
+        break;
+      case CL_INVALID_WORK_GROUP_SIZE:
+        printf("invalid work group size\n");
+        break;
+      case CL_INVALID_WORK_ITEM_SIZE:
+        printf("work item size\n");
+        break;
+      case CL_INVALID_WORK_DIMENSION:
+        printf("work demension\n");
+        break;
+      case CL_INVALID_EVENT_WAIT_LIST:
+        printf("invalid event list\n");
+        break;
+      case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+        printf("mem allocation failure\n");
+        break;
+      case CL_INVALID_OPERATION:
+        printf("invalid operation\n");
+        break;
+      default:
+        printf("Impossible Error.\n");
+    }
   }
 }
