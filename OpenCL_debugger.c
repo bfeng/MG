@@ -71,7 +71,7 @@ void *kernel_debugger(void * pt)
     printf("It is %c.\n", *(ret_ptr+1));
   }
   
-  return 0;
+  return;
   
 }
 static void check_err3(cl_int err)

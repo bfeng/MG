@@ -64,6 +64,8 @@ void sys_init()
     char buffer[1024];
     cl_uint buf_uint;
     cl_ulong buf_ulong;
+    size_t buf_size_t;
+    size_t buf_size_t_a[3];
     clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(buffer), buffer, NULL);
     printf("  DEVICE_NAME = %s\n", buffer);
     clGetDeviceInfo(devices[i], CL_DEVICE_VENDOR, sizeof(buffer), buffer, NULL);
@@ -79,6 +81,12 @@ void sys_init()
     clGetDeviceInfo(devices[i], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(buf_ulong),
                     &buf_ulong, NULL);
     printf("  DEVICE_GLOBAL_MEM_SIZE = %llu\n", (unsigned long long)buf_ulong);
+    clGetDeviceInfo(devices[i],  CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t),
+                    &buf_size_t, NULL);
+    printf("  DEVICE_MAX_WORK_GROUP_SIZE = %d\n", (int)buf_size_t);
+    clGetDeviceInfo(devices[i],  CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3,
+                    buf_size_t_a, NULL);
+    printf("  DEVICE_MAX_WORK_ITEM_SIZES = %d, %d, %d\n", (int)buf_size_t_a[0], (int)buf_size_t_a[1], (int)buf_size_t_a[2]);
 
   }
 

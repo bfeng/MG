@@ -65,6 +65,7 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
   cl_mem d_sleeptime = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), 
                              NULL, &ERR);
   check_err(ERR);
+  clEnqueueWriteBuffer(command_queue, d_sleeptime, CL_TRUE, 0, sizeof(int), &THE_SLEEP_TIME, 0, NULL, NULL);
   
                              
 
@@ -105,10 +106,15 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
   ERR = clSetKernelArg(openCL_kernel, 0, sizeof(cl_mem), (void *)&d_sleeptime);
   ERR = clSetKernelArg(openCL_kernel, 1, sizeof(cl_mem), (void *)&d_debug);
   
-  size_t global_work_size_d = 10;
-  size_t local_work_size = 5;
+  size_t global_work_size_d = THE_warps;
+  //THE_blocks * 48 * THE_warps;
+  size_t local_work_size = THE_numJobsPerWarp;
+  //48 * THE_warps;
+  int ii = 0;
   
-  ERR = clEnqueueNDRangeKernel( //list of arguments
+  //for (ii;ii<THE_warps;ii++)
+  //{
+    ERR = clEnqueueNDRangeKernel( //list of arguments
                               command_queue,
                               openCL_kernel,
                               1,
@@ -116,10 +122,18 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
                               &global_work_size_d,
                               &local_work_size,
                               0, NULL, NULL);
-  check_err(ERR);
+    check_err(ERR);
+  //}
+  
+  /*
+  for (ii;ii<3;ii++)
+  {
+  ERR = clEnqueueTask(command_queue, openCL_kernel, 0, NULL, NULL);
+  }
+  */
   
   ERR = clFinish(command_queue);
-  
+  //check_err(ERR);
   //#-6 Create debug pthread
   openCL_debugger(context, devices[0], d_debug);
 
