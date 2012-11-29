@@ -28,4 +28,4 @@ pthread_mutex_t memcpyLock;
 
 
 
-void SuperKernel_init(cl_context);
+void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_time, cl_context context);

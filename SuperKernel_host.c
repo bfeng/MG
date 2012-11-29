@@ -23,24 +23,34 @@ pthread_t start_ResultsManager();
 void *main_ResultsManager();
 
 
-void SuperKernel_init(cl_context context)
+void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_time, cl_context context)
 {
-  //#-1 Inputs
-  printf("#####################################\n");
-  printf("# Please give inputs to SuperKernel #\n");
-  printf("#####################################\n");
+  printf("Warps: %d\n", warps);
+  printf("Blocks: %d\n", blocks);
+  printf("Number of jobs per warp: %d\n", num_job_per_warp);
+  printf("Sleep time: %d\n", sleep_time);
 
-  printf("\nPlease enter the warps number >>>");
-  scanf("%d", &THE_warps);
-  printf("\nPlease enter the blocks number >>>");
-  scanf("%d", &THE_blocks);
-  printf("\nPlease enter the number of jobs per warp >>>");
-  scanf("%d", &THE_numJobsPerWarp);
-  printf("\nPlease enter the sleep time (sec) >>>");
-  scanf("%d", &THE_SLEEP_TIME);
-  
+  //#-1 Inputs
+  // printf("#####################################\n");
+  // printf("# Please give inputs to SuperKernel #\n");
+  // printf("#####################################\n");
+
+  // printf("\nPlease enter the warps number >>>");
+  // scanf("%d", &THE_warps);
+  // printf("\nPlease enter the blocks number >>>");
+  // scanf("%d", &THE_blocks);
+  // printf("\nPlease enter the number of jobs per warp >>>");
+  // scanf("%d", &THE_numJobsPerWarp);
+  // printf("\nPlease enter the sleep time (sec) >>>");
+  // scanf("%d", &THE_SLEEP_TIME);
+
+  THE_warps = warps;
+  THE_blocks = blocks;
+  THE_numJobsPerWarp = num_job_per_warp;
+  THE_SLEEP_TIME = sleep_time;
+
   THE_NUMBER_OF_JOBS = THE_warps * THE_blocks * THE_numJobsPerWarp;
-  
+
   //#-2 Create CommandQueue
   //##########################################
   //# currently only single cpu is supported #
@@ -48,18 +58,18 @@ void SuperKernel_init(cl_context context)
   cl_int ERR;
   command_queue = clCreateCommandQueue(context, devices[0], 0, &ERR);
   check_err(ERR);
-  
+
   //#-3 Create QueueJobs
   CreateQueues(256000, context, command_queue);
-  
+
   //#-4 Compile OpenCL Kernel program
-  
+
   char filename[256] = "SuperKernel_device.cl";
   openCL_compiler(filename, context, &devices[0]);
-  
+
   //#-5 Run kernel
   OpenCL_launcher_struct * l_struct = (OpenCL_launcher_struct *) malloc (sizeof(OpenCL_launcher_struct));
-  
+
   //##########################################
   //# input for EnqueueNDRangeKernel         #
   //##########################################
@@ -69,40 +79,40 @@ void SuperKernel_init(cl_context context)
   l_struct->global_work_offset = (size_t)NULL;
   l_struct->global_work_size = (size_t)32*THE_warps*THE_blocks;
   l_struct->local_work_size = (size_t)32*THE_warps;
-  
-  openCL_launcher(context, devices[0], 
-                     l_struct, 
+
+  openCL_launcher(context, devices[0],
+                     l_struct,
                      &d_newJobs,
                      &d_newJobs_array,
                      &d_finishedJobs,
                      &d_finishedJobs_array,
                      &d_debug,
                      &THE_numJobsPerWarp);
-  
-  
+
+
   //#-6 Create debug pthread
   openCL_debugger(context, devices[0], d_debug);
-  
+
   //#-7 create pthreads to handle QueueJobs
-  
+
   pthread_mutex_init(&memcpyLock, NULL);
-  
+
   pthread_t IncomingJobManager = start_IncomingJobsManager();
   pthread_t ResultsManager = start_ResultsManager();
-  
+
   pthread_join(IncomingJobManager, NULL);
   pthread_join(ResultsManager, NULL);
-  
+
 
   //#-8 Finish and recycle
   printf("Both managers have finished\n");
   printf("Destorying Queues...\n");
-    
+
   DisposeQueues();
-  
+
   pthread_mutex_destroy(&memcpyLock);
-  
-  
+
+
 }
 
 
@@ -116,14 +126,14 @@ pthread_t start_IncomingJobsManager()
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   pthread_t thread1;
-  
+
   int rc;
   rc = pthread_create( &thread1, &attr, main_IncomingJobsManager, NULL);
   if (rc) {
          printf("ERROR; return code from pthread_create is %d\n", rc);
          exit(-1);
          }
-         
+
   pthread_attr_destroy(&attr);
 
   return thread1;
@@ -149,11 +159,11 @@ void *main_IncomingJobsManager()
 
     JobDescription *h_JobDescription;
     h_JobDescription = (JobDescription *) malloc(sizeof(JobDescription));
-    
+
     h_JobDescription->JobType = HC_JobType;
     h_JobDescription->JobID = HC_JobID;
     //even hard coded
-    h_JobDescription->params = THE_SLEEP_TIME; 
+    h_JobDescription->params = THE_SLEEP_TIME;
     h_JobDescription->numThreads = HC_numThreads;
 
     EnqueueJob(h_JobDescription, command_queue, memcpyLock);
@@ -185,16 +195,16 @@ void *main_ResultsManager()
 //  print something about them to the screen.
 //    --eventually this should return the result to the application
 //      that requested the work.
-  printf("Starting ResultsManager\n"); 
+  printf("Starting ResultsManager\n");
 
   int HC_jobs = THE_NUMBER_OF_JOBS;
   int i;
   JobDescription *currentJob;
-  
+
   for(i=0;i<HC_jobs;i++){
-  
+
     currentJob = FrontAndDequeueResult(command_queue, memcpyLock);
-    
+
   }
   return 0;
 }
