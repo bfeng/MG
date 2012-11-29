@@ -18,6 +18,7 @@ clean:
 	rm $(objects)
 	rm MG
 	rm *.h.gch
+	rm MG
 
 %.o:%.c
 	$(CC) -c $+ $(params)
