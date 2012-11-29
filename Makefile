@@ -51,3 +51,9 @@ test:
 	##### Now "make all" has the same effect  #####
 	###############################################
 	gcc -o MG $(SOURCES) -I/usr/local/cuda/include -L/usr/lib64/ -lOpenCL
+	
+	
+cuda:
+	nvcc -g -I/usr/include -G -arch=sm_11 -lpthread cuda_cu.cu -o CU
+cleancuda:
+	rm CU
