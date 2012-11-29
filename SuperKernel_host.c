@@ -62,14 +62,27 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
   //#-3 Create QueueJobs
   CreateQueues(256000, context, command_queue);
 
-  cl_mem d_sleeptime = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int),
+  int * array_sleeptime = (int *)malloc(sizeof(int)*THE_warps);
+  int n;
+  for (n=0;n<THE_warps;n++)
+  {
+    array_sleeptime[n] = THE_SLEEP_TIME;
+  }
+  int * array_output = (int *)malloc(sizeof(int)*THE_warps);
+
+  cl_mem d_sleeptime = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int)*THE_warps,
                              NULL, &ERR);
   check_err(ERR);
-  clEnqueueWriteBuffer(command_queue, d_sleeptime, CL_TRUE, 0, sizeof(int), &THE_SLEEP_TIME, 0, NULL, NULL);
+  clEnqueueWriteBuffer(command_queue, d_sleeptime, CL_TRUE, 0, sizeof(int)*THE_warps, array_sleeptime, 0, NULL, NULL);
   cl_mem d_numjobs = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int),
                              NULL, &ERR);
   check_err(ERR);
   clEnqueueWriteBuffer(command_queue, d_numjobs, CL_TRUE, 0, sizeof(int), &THE_numJobsPerWarp, 0, NULL, NULL);
+  
+  cl_mem d_output = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int)*THE_warps,
+                             NULL, &ERR);
+  check_err(ERR);
+
 
 
 
@@ -111,6 +124,7 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
   ERR = clSetKernelArg(openCL_kernel, 0, sizeof(cl_mem), (void *)&d_sleeptime);
   ERR = clSetKernelArg(openCL_kernel, 1, sizeof(cl_mem), (void *)&d_debug);
   ERR = clSetKernelArg(openCL_kernel, 2, sizeof(cl_mem), (void *)&d_numjobs);
+  ERR = clSetKernelArg(openCL_kernel, 3, sizeof(cl_mem), (void *)&d_output);
 
   size_t global_work_size_d = THE_warps;
   //THE_blocks * 48 * THE_warps;
@@ -157,7 +171,17 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
   //pthread_join(IncomingJobManager, NULL);
   //pthread_join(ResultsManager, NULL);
   pthread_join(P_Debugger, NULL);
-
+  
+  //#-7b get output
+  
+  ERR = clEnqueueReadBuffer(command_queue, d_output, CL_TRUE, 0, sizeof(int)*THE_warps, array_output, 0, NULL, NULL);
+  for(n=0;n<THE_warps;n++)
+  {
+    printf(" %d ", array_output[n]);
+  }
+  
+  
+  
   //#-8 Finish and recycle
   //printf("Both managers have finished\n");
   printf("Destorying Queues...\n");

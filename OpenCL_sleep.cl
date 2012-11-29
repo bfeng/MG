@@ -1,12 +1,14 @@
 //#pragma OPENCL EXTENSION cl_intel_printf : enable
 
-__kernel void superKernel(__global int * seconds_input, __global char * debugger, __global int * numberjobs)
+__kernel void superKernel(__global int * seconds_input, __global char * debugger, __global int * numberjobs, __global int * output)
 {
   //debugger only 1024 * sizeof(char)
   float AddPerUs = 14846398.5;
   float adds = (*seconds_input)*AddPerUs;
   
   int t = get_global_id(0);
+  int t2 = get_local_id(0);
+  output[t] = t2;
   int loop = *numberjobs;
   int loop_temp;
   for(loop_temp = 0; loop_temp < loop; loop_temp++)
