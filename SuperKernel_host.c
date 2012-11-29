@@ -25,8 +25,8 @@ void *main_ResultsManager();
 
 void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_time, cl_context context)
 {
-  printf("Warps: %d\n", warps);
-  printf("Blocks: %d\n", blocks);
+  printf("Global work size: %d\n", warps);
+  printf("Local work size: %d\n", blocks);
   printf("Number of jobs per warp: %d\n", num_job_per_warp);
   printf("Sleep time: %d\n", sleep_time);
 
@@ -61,21 +61,21 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
 
   //#-3 Create QueueJobs
   CreateQueues(256000, context, command_queue);
-  
-  cl_mem d_sleeptime = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), 
+
+  cl_mem d_sleeptime = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int),
                              NULL, &ERR);
   check_err(ERR);
   clEnqueueWriteBuffer(command_queue, d_sleeptime, CL_TRUE, 0, sizeof(int), &THE_SLEEP_TIME, 0, NULL, NULL);
-  cl_mem d_numjobs = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), 
+  cl_mem d_numjobs = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int),
                              NULL, &ERR);
   check_err(ERR);
   clEnqueueWriteBuffer(command_queue, d_numjobs, CL_TRUE, 0, sizeof(int), &THE_numJobsPerWarp, 0, NULL, NULL);
-  
-  
-                             
+
+
+
 
   //#-4 Compile OpenCL Kernel program
-  
+
   //char filename[256] = "SuperKernel_device.cl";
   char filename[256] = "OpenCL_sleep.cl";
   openCL_compiler(filename, context, &devices[0]);
@@ -104,23 +104,23 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
                      &THE_numJobsPerWarp);
 
   */
-  
+
   //#-5b test debugger run with sleep
   //sleep_command_queue = clCreateCommandQueue(context, devices[0], 0, &ERR);
   check_err_easy(ERR);
   ERR = clSetKernelArg(openCL_kernel, 0, sizeof(cl_mem), (void *)&d_sleeptime);
   ERR = clSetKernelArg(openCL_kernel, 1, sizeof(cl_mem), (void *)&d_debug);
   ERR = clSetKernelArg(openCL_kernel, 2, sizeof(cl_mem), (void *)&d_numjobs);
-  
+
   size_t global_work_size_d = THE_warps;
   //THE_blocks * 48 * THE_warps;
-  size_t local_work_size = THE_numJobsPerWarp;
+  size_t local_work_size = THE_blocks;
   //48 * THE_warps;
-  
+
   size_t offset = 0;
   size_t offset1 = 47;
   int ii = 0;
-  
+
   //for (ii;ii<THE_warps;ii++)
   //{
     ERR = clEnqueueNDRangeKernel( //list of arguments
@@ -134,14 +134,14 @@ void SuperKernel_init(int warps, int blocks, int num_job_per_warp, int sleep_tim
     check_err(ERR);
 
   //}
-  
+
   /*
   for (ii;ii<3;ii++)
   {
   ERR = clEnqueueTask(command_queue, openCL_kernel, 0, NULL, NULL);
   }
   */
-  
+
   ERR = clFinish(command_queue);
   //check_err(ERR);
   //#-6 Create debug pthread
@@ -272,7 +272,7 @@ void check_err(cl_int err)
   {
     printf("#Error in SuperKernel_host!!\n");
     printf("#PLEASE ASK THE CODE WRITTER# if you see this.\n");
-    
+
     switch(err)
     {
       case CL_INVALID_MEM_OBJECT:
